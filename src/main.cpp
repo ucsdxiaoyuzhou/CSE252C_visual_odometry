@@ -12,6 +12,7 @@
 #include <time.h>
 #include <string.h>
 #include <dirent.h>
+#include <fstream>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -24,6 +25,9 @@
 
 #include "frame.hpp"
 #include "draw.hpp"
+
+#include <Eigen/core>
+#include <Eigen/Geometry>
 
 using namespace cv;
 using namespace std;
@@ -51,6 +55,8 @@ void LoadImages(const string &strPathLeft,
                 const string &strPathRight,
                 vector<string> &vstrImageLeft,
                 vector<string> &vstrImageRight);
+
+void accumulateTransformation(Eigen::Isometry3d& accumT, Mat currR, Mat currT);
 
 int main(int argc, const char * argv[]) {
     if(argc != 4){
@@ -91,19 +97,22 @@ int main(int argc, const char * argv[]) {
     clock_t t;
 //=============== initialize system ============================================
     int count = 1;
-    // Mat accumTranslation;
-    double accumTX = 0, accumTY = 0, accumTZ = 0;
+    // Mat accumTranslation = Mat::eye(4,4,CV_32F);
+    Eigen::Isometry3d accumTranslation = Eigen::Isometry3d::Identity();
 
     //grap the first image, set it to lastframe, actually, this can be called
     //prevous frame.
     Frame lastframe(leftImgName[0], rightImgName[0], srp.P1, srp.P2);
     
-    cout << accumTX << endl;
+    string filePath = "../pose08.txt";
+    ofstream poseFileOut;
+    poseFileOut.open(filePath.c_str());
 
 //============== main loop ============================================================
     while(1){
         //grap the current frame
         Frame currframe(leftImgName[count], rightImgName[count], srp.P1, srp.P2);
+        
         lastframe.matchFrame(currframe);
 
         //compute the extent of motion
@@ -111,13 +120,34 @@ int main(int argc, const char * argv[]) {
         //if the motion is small, it means it is correct, because the motion
         //should be smooth, there cannot ba any sudden change.
         if(move < 3.0){
-            accumTX += lastframe.tvec.at<double>(0,0);
-            accumTY += lastframe.tvec.at<double>(1,0);
-            accumTZ += lastframe.tvec.at<double>(2,0);
-
-            cout << "accum translation: " << accumTX <<" "<<accumTY << " "<<accumTZ << " " << endl;
+            accumulateTransformation(accumTranslation, lastframe.rvec, lastframe.tvec);
+            // cout <<endl << accumTranslation << endl;
             //if motion is small, then set the current frame as the previous 
             //frame
+            /*
+            
+
+            accumTranslation.row(0).copyTo(forshow.colRange(0,4));
+            accumTranslation.row(1).copyTo(forshow.colRange(4,8));
+            accumTranslation.row(2).copyTo(forshow.colRange(8,12));
+*/
+            // Mat forshow = Mat::zeros(1,12,CV_32F);
+
+            // cout << "Frame number: " << count <<endl;
+            // for(int n = 0; n < 11; n++){
+            //     poseFileOut << accumTranslation.at<float>(0,n) << " " ;
+            // }
+            for(int r = 0; r < 3; r++){
+                for(int c = 0; c < 4; c++){
+                    poseFileOut << accumTranslation(r,c) << " ";
+                    cout << accumTranslation(r,c) << " ";
+                }
+            }
+            poseFileOut <<"\n" ;
+            cout << "\n" ;
+
+
+          //  cout << forshow.at<float>(0,3)<<" "<< forshow.at<float>(0,7)<<" "<< forshow.at<float>(0,11)<<" " << endl;
             lastframe = currframe;
         }
         else{
@@ -127,12 +157,66 @@ int main(int argc, const char * argv[]) {
 
         count++;
     }
+    poseFileOut.close();
     
 //=========== main loop ends ===========================================================
     
     waitKey(0);
     return 0;
 }
+
+Eigen::Isometry3d cvMat2Eigen( cv::Mat& rvec, cv::Mat& tvec )
+{
+    cv::Mat R;
+    cv::Rodrigues( rvec, R );
+    Eigen::Matrix3d r;
+    for ( int i=0; i<3; i++ )
+        for ( int j=0; j<3; j++ ) 
+            r(i,j) = R.at<double>(i,j);
+  
+    // 将平移向量和旋转矩阵转换成变换矩阵
+    Eigen::Isometry3d T = Eigen::Isometry3d::Identity();
+
+    Eigen::AngleAxisd angle(r);
+    T = angle;
+    T(0,3) = tvec.at<double>(0,0); 
+    T(1,3) = tvec.at<double>(1,0); 
+    T(2,3) = tvec.at<double>(2,0);
+    return T;
+}
+void accumulateTransformation(Eigen::Isometry3d& accumT, Mat currR, Mat currT){
+    cv::Mat R;
+    cv::Rodrigues( currR, R );
+    Eigen::Matrix3d r;
+
+    r(0,0) = R.at<double>(0,0);
+    r(0,1) = R.at<double>(0,1);
+    r(0,2) = R.at<double>(0,2);
+    r(1,0) = R.at<double>(1,0);
+    r(1,1) = R.at<double>(1,1);
+    r(1,2) = R.at<double>(1,2);
+    r(2,0) = R.at<double>(2,0);
+    r(2,1) = R.at<double>(2,1);
+    r(2,2) = R.at<double>(2,2);
+
+    Eigen::Isometry3d T = Eigen::Isometry3d::Identity();
+
+    Eigen::AngleAxisd angle(r);
+    Eigen::Translation<double,3> trans(currT.at<double>(0,0), 
+                                       currT.at<double>(1,0), 
+                                       currT.at<double>(2,0));
+    T = angle;
+    T(0,3) = currT.at<double>(0,0); 
+    T(1,3) = currT.at<double>(1,0); 
+    T(2,3) = currT.at<double>(2,0);
+
+    Eigen::Isometry3d invT = T.inverse();
+    accumT = invT * accumT;
+
+    cout << accumT.matrix() << endl<<endl;
+    // accumT = T;
+}
+
 
 
 void LoadImages(const string &strPathLeft,
@@ -162,10 +246,16 @@ void LoadImages(const string &strPathLeft,
         
         stringstream ss;
         ss.fill('0');
-        ss.width(6);
+        ss.width(10);
         ss << n;
         vstrImageLeft.push_back(strPathLeft + "/" + ss.str() + ".png");
         vstrImageRight.push_back(strPathRight + "/" + ss.str() + ".png");
         
     }
 }
+
+
+
+
+
+

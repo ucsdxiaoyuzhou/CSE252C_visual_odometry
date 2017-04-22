@@ -25,7 +25,7 @@ Frame::Frame(string filenameL, string filenameR, Mat _P1, Mat _P2){
         exit;
     }
     
-//    OrbFeatureDetector detector(500, 1.2, 8);
+   // OrbFeatureDetector detector(500, 1.2, 8);
     SurfFeatureDetector detector(1000);
     SurfDescriptorExtractor descriptor;
     
@@ -37,52 +37,6 @@ Frame::Frame(string filenameL, string filenameR, Mat _P1, Mat _P2){
     
     descriptor.compute(imgL, keypointL, despL);
     descriptor.compute(imgR, keypointR, despR);
-
-    /*
-    std::vector< DMatch > matches;
-    matcher.match( despL, despR, matches );
-    
-    double max_dist = 0; double min_dist = 100;
-    
-    //-- Quick calculation of max and min distances between keypoints
-    for( int i = 0; i < despL.rows; i++ )
-    { double dist = matches[i].distance;
-        if( dist < min_dist ) min_dist = dist;
-        if( dist > max_dist ) max_dist = dist;
-    }
-    
-    vector< DMatch > good_matches;
-    vector<KeyPoint> temp_keypointL, temp_keypointR;
-    vector<Mat> temp_despL, temp_despR;
-    
-    for( int i = 0; i < despL.rows; i++ ){
-        if((matches[i].distance <= max(3.5*min_dist, 0.02)) &&
-           fabs(keypointL[matches[i].queryIdx].pt.y -
-                keypointR[matches[i].trainIdx].pt.y) < 2.0){
-               temp_keypointL.push_back(keypointL[matches[i].queryIdx]);
-               temp_keypointR.push_back(keypointR[matches[i].trainIdx]);
-               temp_despL.push_back(despL.row(i));
-               temp_despR.push_back(despR.row(i));
-        }
-    }
-    keypointL = temp_keypointL;
-    keypointR = temp_keypointR;
-    
-    KeyPoint::convert(keypointL, p_keypointL);
-    KeyPoint::convert(keypointR, p_keypointR);
-    
-    
-    Mat tempDespL, tempDespR;
-    tempDespL = Mat::zeros(temp_despL.size(), despL.cols, CV_32F);
-    tempDespR = Mat::zeros(temp_despR.size(), despR.cols, CV_32F);
-    
-    for(int i = 0; i < temp_despL.size(); i++){
-        tempDespL.row(i) = temp_despL[i].clone();
-        tempDespR.row(i) = temp_despR[i].clone();
-    }
-    despL = tempDespL.clone();
-    despR = tempDespR.clone();
-    drawMatch(imgL, p_keypointL, p_keypointR, 2, "matches");*/
 }
 
 
@@ -101,7 +55,7 @@ void Frame::matchFrame(Frame frame){
         if( dist < min_dist ) min_dist = dist;
         if( dist > max_dist ) max_dist = dist;
     }
-    
+    // cout << "min_dist: " << min_dist << endl<<endl;
     std::vector< DMatch > good_matches;
 
     for( int i = 0; i < despL.rows; i++ ){
@@ -173,6 +127,7 @@ void Frame::getMotion(vector<DMatch> matches,
     KeyPoint::convert(temp_p_keypointL, temp_keypointL);
     KeyPoint::convert(temp_p_keypointR, temp_keypointR);
     drawMatch(imgL, temp_p_keypointL, temp_p_keypointR, 2, "stereo match");
+
     //====compute depth=======
     float uc = P2.at<float>(0,2);
     float vc = P2.at<float>(1,2);
@@ -189,7 +144,7 @@ void Frame::getMotion(vector<DMatch> matches,
     //only compute 3D points for matched features
     Point3f pd;
     vector<Point3f> obj_pts;//3D points
-    for( int n = 0; n<temp_p_keypointL.size(); n++){
+    for(int n = 0; n<temp_p_keypointL.size(); n++){
         d = temp_p_keypointL[n].x - temp_p_keypointR[n].x;
         pd.x = b*(temp_p_keypointL[n].x - uc)/d;
         pd.y = b*(temp_p_keypointL[n].y - vc)/d;
@@ -213,7 +168,7 @@ void Frame::getMotion(vector<DMatch> matches,
     Mat inliers;
 
     solvePnPRansac(obj_pts, img_pts, K, Mat(),
-                   rvec, tvec, false, 200, 3.0, 10, inliers);
+                   rvec, tvec, false, 200, 3.0, 30, inliers);
     // Mat t_tvec;
     // transpose(tvec, t_tvec);
 
