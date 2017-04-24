@@ -23,10 +23,17 @@
 #include "opencv2/nonfree/features2d.hpp"
 #include <opencv2/video/video.hpp>
 
+// #include <pcl/io/pcd_io.h>
+// #include <pcl/io/ply_io.h>
+#include <pcl/point_types.h>
+#include <pcl/visualization/cloud_viewer.h>
+// #include <pcl/registration/icp.h>
+
+
 #include "frame.hpp"
 #include "draw.hpp"
 
-#include <Eigen/core>
+#include <Eigen/Core>
 #include <Eigen/Geometry>
 
 using namespace cv;
@@ -246,7 +253,7 @@ void LoadImages(const string &strPathLeft,
         
         stringstream ss;
         ss.fill('0');
-        ss.width(10);
+        ss.width(6);
         ss << n;
         vstrImageLeft.push_back(strPathLeft + "/" + ss.str() + ".png");
         vstrImageRight.push_back(strPathRight + "/" + ss.str() + ".png");
