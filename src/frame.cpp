@@ -152,7 +152,7 @@ void Frame::getMotion(vector<DMatch> matches,
         
         obj_pts.push_back(pd);
     }
-
+    scenePts = obj_pts;
 
     //=====obtain tracked points in the second frame=====
     vector<Point2f> img_pts;//2D matched feature points in current image

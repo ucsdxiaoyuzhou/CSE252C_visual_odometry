@@ -9,6 +9,7 @@
 //
 #include <stdio.h>
 #include <iostream>
+#include <iomanip>
 #include <time.h>
 #include <string.h>
 #include <dirent.h>
@@ -23,7 +24,7 @@
 #include "opencv2/nonfree/features2d.hpp"
 #include <opencv2/video/video.hpp>
 
-// #include <pcl/io/pcd_io.h>
+#include <pcl/io/pcd_io.h>
 // #include <pcl/io/ply_io.h>
 #include <pcl/point_types.h>
 #include <pcl/visualization/cloud_viewer.h>
@@ -32,6 +33,7 @@
 
 #include "frame.hpp"
 #include "draw.hpp"
+#include "map.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -64,7 +66,7 @@ void LoadImages(const string &strPathLeft,
                 vector<string> &vstrImageRight);
 
 void accumulateTransformation(Eigen::Isometry3d& accumT, Mat currR, Mat currT);
-
+Eigen::Isometry3d cvMat2Eigen( cv::Mat& rvec, cv::Mat& tvec );
 int main(int argc, const char * argv[]) {
     if(argc != 4){
         cerr << endl<<"usage: ./path_to_left_camera_image_directory ./path_to_right_camera_image_directory ./path_to_camera_setting_file" << endl;
@@ -103,9 +105,12 @@ int main(int argc, const char * argv[]) {
     Size imageSize = Size(col, row);
     clock_t t;
 //=============== initialize system ============================================
+    MAP myMap;
     int count = 1;
     // Mat accumTranslation = Mat::eye(4,4,CV_32F);
     Eigen::Isometry3d accumTranslation = Eigen::Isometry3d::Identity();
+    visualization::CloudViewer viewer("Cloud Viewer");
+    PointCloud<PointXYZ>::Ptr cloud (new PointCloud<PointXYZ>);
 
     //grap the first image, set it to lastframe, actually, this can be called
     //prevous frame.
@@ -113,10 +118,10 @@ int main(int argc, const char * argv[]) {
     
     string filePath = "../pose08.txt";
     ofstream poseFileOut;
-    poseFileOut.open(filePath.c_str());
+    poseFileOut.open(filePath.c_str(), std::ofstream::out | std::ofstream::trunc);
 
 //============== main loop ============================================================
-    while(1){
+    for(;count < leftImgName.size()-1; count++){
         //grap the current frame
         Frame currframe(leftImgName[count], rightImgName[count], srp.P1, srp.P2);
         
@@ -144,7 +149,30 @@ int main(int argc, const char * argv[]) {
             // for(int n = 0; n < 11; n++){
             //     poseFileOut << accumTranslation.at<float>(0,n) << " " ;
             // }
-            for(int r = 0; r < 3; r++){
+            Eigen::Isometry3d curTrans =  cvMat2Eigen(lastframe.rvec, lastframe.tvec);
+            myMap.jointToMap(myMap.pointToPointCloud(lastframe.scenePts), 
+                             curTrans);
+
+            // myMap.showMap(viewer);
+            *cloud = myMap.entireMap;
+            viewer.showCloud(cloud);
+            if(waitKey(5) == 27){
+                exit;
+            }
+
+            
+            for(int n = 0; n < 3; n++){
+                poseFileOut << setw(15)<< lastframe.rvec.at<double>(n,0) <<" ";
+                cout<< setw(15) << lastframe.rvec.at<double>(n,0) <<" ";
+            }
+            for(int n = 0; n < 3; n++){
+                poseFileOut << setw(15)<< lastframe.tvec.at<double>(n,0) << " ";
+                cout<< setw(15) << lastframe.tvec.at<double>(n,0) << " ";
+            }
+            poseFileOut << endl;
+            cout << "   move:" << move  <<endl;
+
+            /*for(int r = 0; r < 3; r++){
                 for(int c = 0; c < 4; c++){
                     poseFileOut << accumTranslation(r,c) << " ";
                     cout << accumTranslation(r,c) << " ";
@@ -152,19 +180,33 @@ int main(int argc, const char * argv[]) {
             }
             poseFileOut <<"\n" ;
             cout << "\n" ;
-
+*/
 
           //  cout << forshow.at<float>(0,3)<<" "<< forshow.at<float>(0,7)<<" "<< forshow.at<float>(0,11)<<" " << endl;
             lastframe = currframe;
         }
         else{
             //if motion is too large, then assume the current estimation is wrong
+            for(int n = 0; n < 3; n++){
+                poseFileOut << setw(15)<< 0.0 <<" ";
+                cout<< setw(15) << 0.0 <<" ";
+            }
+            for(int n = 0; n < 3; n++){
+                poseFileOut << setw(15)<< 0.0 << " ";
+                cout<< setw(15) << 0.0 << " ";
+            }
+            poseFileOut << endl;
+            cout << "   move:" << move;
             cout << "bad frame!" << endl;
         }
 
-        count++;
     }
     poseFileOut.close();
+    cloud->height = 1;
+    cloud->width = cloud->points.size();
+    
+    pcl::io::savePCDFileASCII("traj.pcd", *cloud);
+    cout << "trajectory saved!" << endl;
     
 //=========== main loop ends ===========================================================
     
@@ -181,7 +223,7 @@ Eigen::Isometry3d cvMat2Eigen( cv::Mat& rvec, cv::Mat& tvec )
         for ( int j=0; j<3; j++ ) 
             r(i,j) = R.at<double>(i,j);
   
-    // 将平移向量和旋转矩阵转换成变换矩阵
+    // convert translation vector to translation matrix
     Eigen::Isometry3d T = Eigen::Isometry3d::Identity();
 
     Eigen::AngleAxisd angle(r);
@@ -220,7 +262,7 @@ void accumulateTransformation(Eigen::Isometry3d& accumT, Mat currR, Mat currT){
     Eigen::Isometry3d invT = T.inverse();
     accumT = invT * accumT;
 
-    cout << accumT.matrix() << endl<<endl;
+    // cout << accumT.matrix() << endl<<endl;
     // accumT = T;
 }
 

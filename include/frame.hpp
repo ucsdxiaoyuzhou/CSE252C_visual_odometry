@@ -42,9 +42,11 @@ public:
     Mat imgL, imgR;
     vector<KeyPoint> keypointL, keypointR;
     vector<Point2f> p_keypointL, p_keypointR;
+    vector<Point3f> scenePts;
     Mat despL, despR;
     Mat P1, P2;
     Mat rvec, tvec;
+
     
     Frame(string filenameL,
           string filenameR,
