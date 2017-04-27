@@ -136,19 +136,6 @@ int main(int argc, const char * argv[]) {
             // cout <<endl << accumTranslation << endl;
             //if motion is small, then set the current frame as the previous 
             //frame
-            /*
-            
-
-            accumTranslation.row(0).copyTo(forshow.colRange(0,4));
-            accumTranslation.row(1).copyTo(forshow.colRange(4,8));
-            accumTranslation.row(2).copyTo(forshow.colRange(8,12));
-*/
-            // Mat forshow = Mat::zeros(1,12,CV_32F);
-
-            // cout << "Frame number: " << count <<endl;
-            // for(int n = 0; n < 11; n++){
-            //     poseFileOut << accumTranslation.at<float>(0,n) << " " ;
-            // }
             Eigen::Isometry3d curTrans =  cvMat2Eigen(lastframe.rvec, lastframe.tvec);
             myMap.jointToMap(myMap.pointToPointCloud(lastframe.scenePts), 
                              curTrans);

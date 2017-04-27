@@ -37,6 +37,14 @@ void MAP::jointToMap(PointCloud<PointXYZ> frameMap, Eigen::Isometry3d& trans){
 
 	*tempCloud += frameMap;
 	entireMap = *tempCloud;
+
+
+	// static pcl::VoxelGrid<PointXYZ> voxel;
+	// voxel.setLeafSize(2.5, 2.5, 2.5);
+	// voxel.setInputCloud(tempCloud);
+
+	// voxel.filter(entireMap);
+
 }
 
 // void MAP::showMap(visualization::CloudViewer viewer){

@@ -152,7 +152,7 @@ void Frame::getMotion(vector<DMatch> matches,
         
         obj_pts.push_back(pd);
     }
-    scenePts = obj_pts;
+    // scenePts = obj_pts;
 
     //=====obtain tracked points in the second frame=====
     vector<Point2f> img_pts;//2D matched feature points in current image
@@ -179,7 +179,10 @@ void Frame::getMotion(vector<DMatch> matches,
     //below is used for visulization
     vector<KeyPoint> mKeypoint1, mKeypoint2;
     KeyPoint kp;
-
+    Point3f obj_pt;
+    vector<Point3f> tempScenePts;
+    // scenePts.clear();
+    // scenePts.reserve(inliers.rows);
     vector<KeyPoint> k_img_pts;
     KeyPoint::convert(img_pts, k_img_pts);
     for(int i = 0; i < inliers.rows; i++){
@@ -188,7 +191,10 @@ void Frame::getMotion(vector<DMatch> matches,
         mKeypoint1.push_back(kp);
         kp = k_img_pts[idx];
         mKeypoint2.push_back(kp);
+        obj_pt = obj_pts[idx];
+        tempScenePts.push_back(obj_pt);
     }
+    scenePts = tempScenePts;
     drawMatch(imgL, mKeypoint1, mKeypoint2, 2, "PnP inliers");
     
 }
