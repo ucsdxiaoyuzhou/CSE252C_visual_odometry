@@ -17,12 +17,14 @@ add_library (${PROJECT_NAME} SHARED
 draw.cpp
 frame.cpp
 map.cpp
+optimizer.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
 ${PCL_LIBRARIES} 
 ${OpenCV_LIBS}
 ${EIGEN3_LIBS}
+g2o_core g2o_types_slam3d g2o_solver_csparse g2o_stuff g2o_csparse_extension ${CSPARSE_LIBRARY}
 )
 
 #=======build main=========================
@@ -32,4 +34,4 @@ vo
 ${PROJECT_NAME} 
 ${OpenCV_LIBS}
 ${PCL_LIBRARIES}
-g2o_core g2o_types_slam3d g2o_solver_csparse g2o_stuff g2o_csparse_extension ${CSPARSE_LIBRARY})
+)

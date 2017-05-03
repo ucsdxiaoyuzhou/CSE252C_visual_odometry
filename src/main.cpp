@@ -24,26 +24,14 @@
 #include "frame.hpp"
 #include "draw.hpp"
 #include "map.hpp"
+#include "optimizer.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <g2o/types/slam3d/types_slam3d.h> //顶点类型
-#include <g2o/core/sparse_optimizer.h>
-#include <g2o/core/block_solver.h>
-#include <g2o/core/factory.h>
-#include <g2o/core/optimization_algorithm_factory.h>
-#include <g2o/core/optimization_algorithm_gauss_newton.h>
-#include <g2o/solvers/csparse/linear_solver_csparse.h>
-#include <g2o/core/robust_kernel.h>
-#include <g2o/core/robust_kernel_factory.h>
-#include <g2o/core/optimization_algorithm_levenberg.h>
 
 using namespace cv;
 using namespace std;
-
-typedef g2o::BlockSolver_6_3 SlamBlockSolver; 
-typedef g2o::LinearSolverCSparse< SlamBlockSolver::PoseMatrixType > SlamLinearSolver; 
 
 //used to store stereo camera parameters
 //for current project, because images are rectified
@@ -123,8 +111,6 @@ int main(int argc, const char * argv[]) {
     visualization::CloudViewer viewer("Cloud Viewer");
     PointCloud<PointXYZ>::Ptr cloud (new PointCloud<PointXYZ>);
 
-    //grap the first image, set it to lastframe, actually, this can be called
-    //prevous frame.
     Frame lastframe(leftImgName[0], rightImgName[0], srp.P1, srp.P2);
     keyframe.push_back(lastframe);
 
