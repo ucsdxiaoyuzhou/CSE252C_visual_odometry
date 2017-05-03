@@ -134,5 +134,39 @@ void drawFeature(Mat img, vector<Point2f> features, char* windowName){
     }
 }
 
+void drawFarandCloseFeatures(Mat img, vector<Point2f> closePts, 
+                             vector<Point2f> farPts, char* windowName){
+    Mat copy;
+    copy = img.clone();
+    cout << "draw far ponits: " << farPts.size() << endl;
+    cout << "draw close points: " << closePts.size() << endl;
+    for( int i = 0; i < closePts.size(); i++){
+        circle( copy, closePts[i], 2, Scalar(0, 255,0), 0.5, 1, 0 );
+    }
+    for( int i = 0; i < farPts.size(); i++){
+        circle( copy, farPts[i], 2, Scalar(0, 0, 255), 0.5, 1, 0 );
+    }
+    imshow(windowName, copy);
+    if(waitKey(1) == 27){
+       exit;
+    }
+}
+
+void drawFarandCloseFeatures(Mat img, vector<Point2f> pts, 
+                             vector<int> farIdx, char* windowName){
+
+    Mat copy;
+    copy = img.clone();
+    for( int i = 0; i < farIdx.size(); i++){
+        if(farIdx[i] == 0)
+            circle( copy, pts[i], 2, Scalar(0, 255,0), 0.5, 1, 0 );
+        else
+            circle( copy, pts[i], 2, Scalar(0, 0, 255), 0.5, 1, 0 );
+    }
+    imshow(windowName, copy);
+    if(waitKey(1) == 27){
+       exit;
+    }
 
 
+}

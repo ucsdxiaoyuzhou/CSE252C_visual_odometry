@@ -10,6 +10,7 @@
 #define draw_hpp
 
 #include <stdio.h>
+#include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -23,6 +24,11 @@ using namespace std;
 void drawFeature(Mat img, vector<Point2f> features, char* windowName);
 void drawFeature(Mat img, vector<KeyPoint> features, char* windowName);
 
+void drawFarandCloseFeatures(Mat img, vector<Point2f> closePts, 
+                             vector<Point2f> farPts, char* windowName);
+
+void drawFarandCloseFeatures(Mat img, vector<Point2f> pts, 
+                             vector<int> farIdx, char* windowName);
 void drawMatch(Mat img_1,
                vector<KeyPoint> keypoints1,
                vector<KeyPoint> keypoints2,

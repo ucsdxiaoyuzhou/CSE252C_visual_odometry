@@ -47,11 +47,6 @@ using namespace std;
 struct STEREO_RECTIFY_PARAMS{
     Mat P1, P2;
     Mat R1, R2;
-    Mat Q;
-    Mat map11, map12;
-    Mat map21, map22;
-    Point2f leftup;
-    Point2f rightbottom;
 };
 
 //compute the extent of motion by taking both rotation and translation
@@ -65,8 +60,8 @@ void LoadImages(const string &strPathLeft,
                 vector<string> &vstrImageLeft,
                 vector<string> &vstrImageRight);
 
-void accumulateTransformation(Eigen::Isometry3d& accumT, Mat currR, Mat currT);
 Eigen::Isometry3d cvMat2Eigen( cv::Mat& rvec, cv::Mat& tvec );
+
 int main(int argc, const char * argv[]) {
     if(argc != 4){
         cerr << endl<<"usage: ./path_to_left_camera_image_directory ./path_to_right_camera_image_directory ./path_to_camera_setting_file" << endl;
@@ -90,8 +85,21 @@ int main(int argc, const char * argv[]) {
     fsSettings["LEFT.P"] >> srp.P1;
     fsSettings["RIGHT.P"] >> srp.P2;
 
+    double lowerMovementThres = fsSettings["lower move threshold"];
+    double upperMovementThres = fsSettings["upper move threshold"];
+    int matchedThres = fsSettings["feature number threshold"];
+    int frameThres = fsSettings["frame threshold"];
+
     int row = fsSettings["height"];
     int col = fsSettings["width"];
+
+    cout << "system overview: " << endl;
+    cout << " lower movement threshold:  " << lowerMovementThres << endl;
+    cout << " upper movement threshold:  " << upperMovementThres << endl;
+    cout << " feature number threshold:  " << matchedThres << endl;
+    cout << "          frame threshold:  " << frameThres << endl;
+
+
 
     if(srp.P1.empty() || srp.P2.empty() || row==0 || col==0){
         cerr << "ERROR: Calibration parameters to rectify stereo are missing!" << endl;
@@ -106,8 +114,8 @@ int main(int argc, const char * argv[]) {
     clock_t t;
 //=============== initialize system ============================================
     MAP myMap;
-    int count = 1;
-    // Mat accumTranslation = Mat::eye(4,4,CV_32F);
+    vector<Frame> keyframe; // keyframe
+
     Eigen::Isometry3d accumTranslation = Eigen::Isometry3d::Identity();
     visualization::CloudViewer viewer("Cloud Viewer");
     PointCloud<PointXYZ>::Ptr cloud (new PointCloud<PointXYZ>);
@@ -115,39 +123,81 @@ int main(int argc, const char * argv[]) {
     //grap the first image, set it to lastframe, actually, this can be called
     //prevous frame.
     Frame lastframe(leftImgName[0], rightImgName[0], srp.P1, srp.P2);
-    
+    keyframe.push_back(lastframe);
+
     string filePath = "../pose08.txt";
     ofstream poseFileOut;
     poseFileOut.open(filePath.c_str(), std::ofstream::out | std::ofstream::trunc);
 
+    int intervalFrame = 0;
+    // double accumRvec = 0.0, accumTvec = 0.0;
+    double accumMove = 0.0;
 //============== main loop ============================================================
-    for(;count < leftImgName.size()-1; count++){
+    for(int count = 1;count < leftImgName.size()-3; count+=1){
         //grap the current frame
+        intervalFrame++;
         Frame currframe(leftImgName[count], rightImgName[count], srp.P1, srp.P2);
         
-        lastframe.matchFrame(currframe);
+        keyframe.back().matchFrame(currframe);
+
 
         //compute the extent of motion
-        double move = normofTransform(lastframe.rvec, lastframe.tvec);
+        // double move = normofTransform(lastframe.rvec, lastframe.tvec);
+        accumMove = normofTransform(keyframe.back().rvec, keyframe.back().tvec);
         //if the motion is small, it means it is correct, because the motion
         //should be smooth, there cannot ba any sudden change.
-        if(move < 3.0){
-            accumulateTransformation(accumTranslation, lastframe.rvec, lastframe.tvec);
-            // cout <<endl << accumTranslation << endl;
-            //if motion is small, then set the current frame as the previous 
-            //frame
+        // if(move < 4.0){\
+        double accumMove = normofTransform(accumRvec, accumTvec);
+        // }
+        // accumMove += move;
+        if(((accumMove > lowerMovementThres) && 
+            (accumMove < upperMovementThres)) || 
+           intervalFrame >= frameThres ||
+           keyframe.back().matchedNumWithCurrentFrame < matchedThres){
+            cout << "insert keyframe." << endl;
+            //add new keyframe
+            accumMove = 0.0;
+            intervalFrame = 0;
+            // keyframe.back().matchFrame(currframe);
+
+            for(int n = 0; n < 3; n++){
+                poseFileOut << setw(15)<< keyframe.back().rvec.at<double>(n,0) <<" ";
+                cout<< setw(15) << keyframe.back().rvec.at<double>(n,0) <<" ";
+            }
+            for(int n = 0; n < 3; n++){
+                poseFileOut << setw(15)<< keyframe.back().tvec.at<double>(n,0) << " ";
+                cout<< setw(15) << keyframe.back().tvec.at<double>(n,0) << " ";
+            }
+            poseFileOut << endl;
+            cout << endl;
+
+            Eigen::Isometry3d curTrans =  cvMat2Eigen(keyframe.back().rvec, keyframe.back().tvec);
+            myMap.jointToMap(myMap.pointToPointCloud(keyframe.back().scenePts), 
+                             curTrans);
+            *cloud = myMap.entireMap;
+            viewer.showCloud(cloud);
+            if(waitKey(5) == 27){
+                exit;
+            }
+            keyframe.push_back(currframe);
+
+        }
+        if(waitKey(100000) == 27){
+            return 1;
+        }
+        // lastframe = currframe;
+       /* if(move < 3.0){
             Eigen::Isometry3d curTrans =  cvMat2Eigen(lastframe.rvec, lastframe.tvec);
             myMap.jointToMap(myMap.pointToPointCloud(lastframe.scenePts), 
                              curTrans);
 
-            // myMap.showMap(viewer);
+
             *cloud = myMap.entireMap;
             viewer.showCloud(cloud);
             if(waitKey(5) == 27){
                 exit;
             }
 
-            
             for(int n = 0; n < 3; n++){
                 poseFileOut << setw(15)<< lastframe.rvec.at<double>(n,0) <<" ";
                 cout<< setw(15) << lastframe.rvec.at<double>(n,0) <<" ";
@@ -156,20 +206,9 @@ int main(int argc, const char * argv[]) {
                 poseFileOut << setw(15)<< lastframe.tvec.at<double>(n,0) << " ";
                 cout<< setw(15) << lastframe.tvec.at<double>(n,0) << " ";
             }
+
             poseFileOut << endl;
             cout << "   move:" << move  <<endl;
-
-            /*for(int r = 0; r < 3; r++){
-                for(int c = 0; c < 4; c++){
-                    poseFileOut << accumTranslation(r,c) << " ";
-                    cout << accumTranslation(r,c) << " ";
-                }
-            }
-            poseFileOut <<"\n" ;
-            cout << "\n" ;
-*/
-
-          //  cout << forshow.at<float>(0,3)<<" "<< forshow.at<float>(0,7)<<" "<< forshow.at<float>(0,11)<<" " << endl;
             lastframe = currframe;
         }
         else{
@@ -186,7 +225,10 @@ int main(int argc, const char * argv[]) {
             cout << "   move:" << move;
             cout << "bad frame!" << endl;
         }
+        */
 
+        // lastframe = currframe;
+    //end of main loop
     }
     poseFileOut.close();
     cloud->height = 1;
@@ -220,39 +262,6 @@ Eigen::Isometry3d cvMat2Eigen( cv::Mat& rvec, cv::Mat& tvec )
     T(2,3) = tvec.at<double>(2,0);
     return T;
 }
-void accumulateTransformation(Eigen::Isometry3d& accumT, Mat currR, Mat currT){
-    cv::Mat R;
-    cv::Rodrigues( currR, R );
-    Eigen::Matrix3d r;
-
-    r(0,0) = R.at<double>(0,0);
-    r(0,1) = R.at<double>(0,1);
-    r(0,2) = R.at<double>(0,2);
-    r(1,0) = R.at<double>(1,0);
-    r(1,1) = R.at<double>(1,1);
-    r(1,2) = R.at<double>(1,2);
-    r(2,0) = R.at<double>(2,0);
-    r(2,1) = R.at<double>(2,1);
-    r(2,2) = R.at<double>(2,2);
-
-    Eigen::Isometry3d T = Eigen::Isometry3d::Identity();
-
-    Eigen::AngleAxisd angle(r);
-    Eigen::Translation<double,3> trans(currT.at<double>(0,0), 
-                                       currT.at<double>(1,0), 
-                                       currT.at<double>(2,0));
-    T = angle;
-    T(0,3) = currT.at<double>(0,0); 
-    T(1,3) = currT.at<double>(1,0); 
-    T(2,3) = currT.at<double>(2,0);
-
-    Eigen::Isometry3d invT = T.inverse();
-    accumT = invT * accumT;
-
-    // cout << accumT.matrix() << endl<<endl;
-    // accumT = T;
-}
-
 
 
 void LoadImages(const string &strPathLeft,
@@ -288,6 +297,7 @@ void LoadImages(const string &strPathLeft,
         vstrImageRight.push_back(strPathRight + "/" + ss.str() + ".png");
         
     }
+    delete cstr;
 }
 
 

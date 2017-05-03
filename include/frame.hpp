@@ -36,6 +36,9 @@ using namespace cv;
 using namespace std;
 // using namespace pcl;
 
+
+
+
 class Frame{
 
 public:
@@ -43,6 +46,12 @@ public:
     vector<KeyPoint> keypointL, keypointR;
     vector<Point2f> p_keypointL, p_keypointR;
     vector<Point3f> scenePts;
+
+    vector<Point2f> forDrawL;
+
+    int matchedNumWithCurrentFrame = 0;
+    // vector<int> farIdx;
+
     Mat despL, despR;
     Mat P1, P2;
     Mat rvec, tvec;
@@ -53,9 +62,31 @@ public:
           Mat _P1,
           Mat _P2);
     void detectFeatures();
+    void stereoMatchKLT(const vector<Point2f>& p1, //keypoint in the previous frame
+                            const vector<Point2f>& p2, //keypoint in the current frame
+                               vector<Point3f>& obj_pts,
+                               vector<Point2f>& img_pts,
+                               vector<int>& farIdx);
+
+    void stereoMatchFeature(const vector<Point2f>& p1, //keypoint in the previous frame
+                            const vector<Point2f>& p2, //keypoint in the current frame
+                            vector<Point3f>& obj_pts,
+                            vector<Point2f>& img_pts,
+                            vector<int>& farIdx);
+
+    void PnP(vector<Point3f> obj_pts, 
+                    vector<Point2f> img_pts);
+
     void getFrame(string filenameL, string filenameR);
     void matchFrame(Frame frame);
     void getMotion(vector<DMatch> matches, Frame frame);
+    void matchFeature(const Mat& desp1, const Mat& desp2, 
+           vector<int>& inlierIdx,
+           vector<DMatch>& good_matches,
+           const vector<Point2f>& p_keypoint1, 
+           const vector<Point2f>& p_keypoint2,
+           vector<Point2f>& result_p_keypoint1,
+           vector<Point2f>& result_p_keypoint2);
 };
 
 
