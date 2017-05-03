@@ -15,21 +15,11 @@
 #include <dirent.h>
 #include <fstream>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/features2d/features2d.hpp>
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/nonfree/nonfree.hpp"
-#include "opencv2/nonfree/features2d.hpp"
-#include <opencv2/video/video.hpp>
-
 #include <pcl/io/pcd_io.h>
 // #include <pcl/io/ply_io.h>
 #include <pcl/point_types.h>
 #include <pcl/visualization/cloud_viewer.h>
 // #include <pcl/registration/icp.h>
-
 
 #include "frame.hpp"
 #include "draw.hpp"
@@ -37,6 +27,17 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+
+#include <g2o/types/slam3d/types_slam3d.h> //顶点类型
+#include <g2o/core/sparse_optimizer.h>
+#include <g2o/core/block_solver.h>
+#include <g2o/core/factory.h>
+#include <g2o/core/optimization_algorithm_factory.h>
+#include <g2o/core/optimization_algorithm_gauss_newton.h>
+#include <g2o/solvers/csparse/linear_solver_csparse.h>
+#include <g2o/core/robust_kernel.h>
+#include <g2o/core/robust_kernel_factory.h>
+#include <g2o/core/optimization_algorithm_levenberg.h>
 
 using namespace cv;
 using namespace std;
