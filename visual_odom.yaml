@@ -20,5 +20,6 @@ lower move threshold: 15.0
 upper move threshold: 40.0
 feature number threshold: 60
 frame threshold: 5
+trajectory file: "../pose.txt" 
 
 

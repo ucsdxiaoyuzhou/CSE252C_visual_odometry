@@ -42,6 +42,9 @@
 using namespace cv;
 using namespace std;
 
+typedef g2o::BlockSolver_6_3 SlamBlockSolver; 
+typedef g2o::LinearSolverCSparse< SlamBlockSolver::PoseMatrixType > SlamLinearSolver; 
+
 //used to store stereo camera parameters
 //for current project, because images are rectified
 // only P1, P2 are used here.
@@ -69,7 +72,7 @@ int main(int argc, const char * argv[]) {
         return 1;
     }
     
-    // load data
+//=================load data==========================================
     vector<string> leftImgName;
     vector<string> rightImgName;
     STEREO_RECTIFY_PARAMS srp; // used to store 
@@ -94,13 +97,13 @@ int main(int argc, const char * argv[]) {
     int row = fsSettings["height"];
     int col = fsSettings["width"];
 
+    string TrajectoryFile = fsSettings["trajectory file"];
+
     cout << "system overview: " << endl;
     cout << " lower movement threshold:  " << lowerMovementThres << endl;
     cout << " upper movement threshold:  " << upperMovementThres << endl;
     cout << " feature number threshold:  " << matchedThres << endl;
     cout << "          frame threshold:  " << frameThres << endl;
-
-
 
     if(srp.P1.empty() || srp.P2.empty() || row==0 || col==0){
         cerr << "ERROR: Calibration parameters to rectify stereo are missing!" << endl;
@@ -117,7 +120,6 @@ int main(int argc, const char * argv[]) {
     MAP myMap;
     vector<Frame> keyframe; // keyframe
 
-    Eigen::Isometry3d accumTranslation = Eigen::Isometry3d::Identity();
     visualization::CloudViewer viewer("Cloud Viewer");
     PointCloud<PointXYZ>::Ptr cloud (new PointCloud<PointXYZ>);
 
@@ -126,13 +128,28 @@ int main(int argc, const char * argv[]) {
     Frame lastframe(leftImgName[0], rightImgName[0], srp.P1, srp.P2);
     keyframe.push_back(lastframe);
 
-    string filePath = "../pose08.txt";
     ofstream poseFileOut;
-    poseFileOut.open(filePath.c_str(), std::ofstream::out | std::ofstream::trunc);
+    poseFileOut.open(TrajectoryFile.c_str(), std::ofstream::out | std::ofstream::trunc);
 
     int intervalFrame = 0;
-    // double accumRvec = 0.0, accumTvec = 0.0;
     double accumMove = 0.0;
+//=============== initialize g2o related========================================
+    //initialize solver
+    SlamLinearSolver* linearSolver = new SlamLinearSolver();
+    linearSolver->setBlockOrdering( false );
+    SlamBlockSolver* blockSolver = new SlamBlockSolver( linearSolver );
+    g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg( blockSolver );
+    
+    g2o::SparseOptimizer globalOptimizer;  
+    globalOptimizer.setAlgorithm( solver ); 
+    globalOptimizer.setVerbose( false );
+
+    //add the first vertex
+    g2o::VertexSE3* v = new g2o::VertexSE3();
+    v->setId(0);
+    v->setEstimate(Eigen::Isometry3d::Identity());
+    v->setFixed( true ); //fix the first vertex
+    globalOptimizer.addVertex(v);
 //============== main loop ============================================================
     for(int count = 1;count < leftImgName.size()-3; count+=1){
         //grap the current frame
@@ -141,16 +158,9 @@ int main(int argc, const char * argv[]) {
         
         keyframe.back().matchFrame(currframe);
 
-
         //compute the extent of motion
-        // double move = normofTransform(lastframe.rvec, lastframe.tvec);
         accumMove = normofTransform(keyframe.back().rvec, keyframe.back().tvec);
-        //if the motion is small, it means it is correct, because the motion
-        //should be smooth, there cannot ba any sudden change.
-        // if(move < 4.0){\
-        double accumMove = normofTransform(accumRvec, accumTvec);
-        // }
-        // accumMove += move;
+
         if(((accumMove > lowerMovementThres) && 
             (accumMove < upperMovementThres)) || 
            intervalFrame >= frameThres ||
