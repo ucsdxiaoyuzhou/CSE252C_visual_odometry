@@ -84,6 +84,8 @@ int main(int argc, const char * argv[]) {
 
     int row = fsSettings["height"];
     int col = fsSettings["width"];
+    int fullTimes = fsSettings["global optimization times"];
+    int localTimes = fsSettings["local optimization times"];
 
     string TrajectoryFile = fsSettings["trajectory file"];
 
@@ -111,7 +113,7 @@ int main(int argc, const char * argv[]) {
     visualization::CloudViewer viewer("Cloud Viewer");
     PointCloud<PointXYZ>::Ptr cloud (new PointCloud<PointXYZ>);
 
-    Frame lastframe(leftImgName[0], rightImgName[0], srp.P1, srp.P2);
+    Frame lastframe(leftImgName[0], rightImgName[0], srp.P1, srp.P2, 0);
     keyframe.push_back(lastframe);
 
     ofstream poseFileOut;
@@ -119,9 +121,11 @@ int main(int argc, const char * argv[]) {
 
     int intervalFrame = 0;
     double accumMove = 0.0;
+
+    Optimizer optimizer(fullTimes, localTimes);
 //=============== initialize g2o related========================================
     //initialize solver
-    SlamLinearSolver* linearSolver = new SlamLinearSolver();
+   /* SlamLinearSolver* linearSolver = new SlamLinearSolver();
     linearSolver->setBlockOrdering( false );
     SlamBlockSolver* blockSolver = new SlamBlockSolver( linearSolver );
     g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg( blockSolver );
@@ -135,12 +139,12 @@ int main(int argc, const char * argv[]) {
     v->setId(0);
     v->setEstimate(Eigen::Isometry3d::Identity());
     v->setFixed( true ); //fix the first vertex
-    globalOptimizer.addVertex(v);
+    globalOptimizer.addVertex(v);*/
 //============== main loop ============================================================
     for(int count = 1;count < leftImgName.size()-3; count+=1){
         //grap the current frame
         intervalFrame++;
-        Frame currframe(leftImgName[count], rightImgName[count], srp.P1, srp.P2);
+        Frame currframe(leftImgName[count], rightImgName[count], srp.P1, srp.P2, count);
         
         keyframe.back().matchFrame(currframe);
 
@@ -149,8 +153,14 @@ int main(int argc, const char * argv[]) {
 
         if(((accumMove > lowerMovementThres) && 
             (accumMove < upperMovementThres)) || 
-           intervalFrame >= frameThres ||
-           keyframe.back().matchedNumWithCurrentFrame < matchedThres){
+            intervalFrame >= frameThres ||
+            keyframe.back().matchedNumWithCurrentFrame < matchedThres){
+            
+            optimizer.addNewNodeEdge(keyframe.back().frameID, 
+            						 currframe.frameID,
+            						 keyframe.back().rvec, 
+            						 keyframe.back().tvec);
+
             cout << "insert keyframe." << endl;
             //add new keyframe
             accumMove = 0.0;
@@ -179,58 +189,14 @@ int main(int argc, const char * argv[]) {
             keyframe.push_back(currframe);
 
         }
-        if(waitKey(100000) == 27){
-            return 1;
-        }
-        // lastframe = currframe;
-       /* if(move < 3.0){
-            Eigen::Isometry3d curTrans =  cvMat2Eigen(lastframe.rvec, lastframe.tvec);
-            myMap.jointToMap(myMap.pointToPointCloud(lastframe.scenePts), 
-                             curTrans);
 
-
-            *cloud = myMap.entireMap;
-            viewer.showCloud(cloud);
-            if(waitKey(5) == 27){
-                exit;
-            }
-
-            for(int n = 0; n < 3; n++){
-                poseFileOut << setw(15)<< lastframe.rvec.at<double>(n,0) <<" ";
-                cout<< setw(15) << lastframe.rvec.at<double>(n,0) <<" ";
-            }
-            for(int n = 0; n < 3; n++){
-                poseFileOut << setw(15)<< lastframe.tvec.at<double>(n,0) << " ";
-                cout<< setw(15) << lastframe.tvec.at<double>(n,0) << " ";
-            }
-
-            poseFileOut << endl;
-            cout << "   move:" << move  <<endl;
-            lastframe = currframe;
-        }
-        else{
-            //if motion is too large, then assume the current estimation is wrong
-            for(int n = 0; n < 3; n++){
-                poseFileOut << setw(15)<< 0.0 <<" ";
-                cout<< setw(15) << 0.0 <<" ";
-            }
-            for(int n = 0; n < 3; n++){
-                poseFileOut << setw(15)<< 0.0 << " ";
-                cout<< setw(15) << 0.0 << " ";
-            }
-            poseFileOut << endl;
-            cout << "   move:" << move;
-            cout << "bad frame!" << endl;
-        }
-        */
-
-        // lastframe = currframe;
-    //end of main loop
     }
     poseFileOut.close();
+
+    optimizer.fullOptimize();
+
     cloud->height = 1;
     cloud->width = cloud->points.size();
-    
     pcl::io::savePCDFileASCII("traj.pcd", *cloud);
     cout << "trajectory saved!" << endl;
     

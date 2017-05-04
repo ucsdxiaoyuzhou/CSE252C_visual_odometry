@@ -41,6 +41,7 @@ using namespace std;
 class Frame{
 
 public:
+    int frameID;
     Mat imgL, imgR;
     vector<KeyPoint> keypointL, keypointR;
     vector<Point2f> p_keypointL, p_keypointR;
@@ -59,7 +60,8 @@ public:
     Frame(string filenameL,
           string filenameR,
           Mat _P1,
-          Mat _P2);
+          Mat _P2,
+          int id);
     void detectFeatures();
     void stereoMatchKLT(const vector<Point2f>& p1, //keypoint in the previous frame
                             const vector<Point2f>& p2, //keypoint in the current frame

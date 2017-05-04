@@ -22,4 +22,6 @@ feature number threshold: 60
 frame threshold: 5
 trajectory file: "../pose.txt" 
 
+global optimization times: 100
+local optiimization times: 20
 

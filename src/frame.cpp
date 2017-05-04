@@ -9,11 +9,12 @@
 #include "frame.hpp"
 
 
-Frame::Frame(string filenameL, string filenameR, Mat _P1, Mat _P2){
+Frame::Frame(string filenameL, string filenameR, Mat _P1, Mat _P2, int id){
     imgL = imread(filenameL);
     imgR = imread(filenameR);
     P1 = _P1;
     P2 = _P2;
+    frameID = id;
     //if use Harris or anyother corner detector, gray-scale images are needed
 //    cvtColor( imgL  , imgL, CV_BGR2GRAY );
 //    cvtColor( imgR  , imgR, CV_BGR2GRAY );

@@ -20,16 +20,34 @@
 #include <g2o/core/robust_kernel_factory.h>
 #include <g2o/core/optimization_algorithm_levenberg.h>
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
+#include <opencv2/core/core.hpp>
+#include "opencv2/calib3d/calib3d.hpp"
+
 typedef g2o::BlockSolver_6_3 SlamBlockSolver; 
 typedef g2o::LinearSolverCSparse< SlamBlockSolver::PoseMatrixType > SlamLinearSolver; 
 
+using namespace std;
+using namespace cv;
+
 class Optimizer{
+private:
+	int fullTimes;
+	int localTimes;
+    g2o::SparseOptimizer globalOptimizer;  
+    g2o::RobustKernel* robustKernel = g2o::RobustKernelFactory::instance()->construct( "Cauchy" );
 
-
-
+public:
+	Optimizer(int _fullTimes, int _localTimes);
+	void addNewNodeEdge(int prevId, int currId, Mat rvec, Mat tvec);
+	void fullOptimize();
+	void localOptimize();
 
 };
 
+Eigen::Isometry3d cvMat2Eigen( cv::Mat& rvec, cv::Mat& tvec );
 
 
 
