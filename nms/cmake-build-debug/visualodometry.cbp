@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="visualodometry"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\..\;CMake Files\..\..\..\..\;CMake Files\..\..\..\..\usr\;CMake Files\..\..\..\..\usr\share\;CMake Files\..\..\..\..\usr\share\pcl-1.7\;CMake Files\..\..\..\..\usr\lib\;CMake Files\..\..\..\..\usr\lib\vtk-5.8\;CMake Files\..\..\..\..\usr\lib\vtk-5.8\CMake\;CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\;CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\;CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Gui\;CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Core\;CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Widgets\;CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Test\;CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Concurrent\;CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5OpenGL\;CMake Files\..\..\..\..\usr\local\;CMake Files\..\..\..\..\usr\local\share\;CMake Files\..\..\..\..\usr\local\share\OpenCV\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/bolunzhang/workspace/nms/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/bolunzhang/workspace/nms/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/bolunzhang/workspace/nms/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="nms">
+				<Option output="/home/bolunzhang/workspace/nms/build/nms" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/bolunzhang/workspace/nms/build"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DDISABLE_PCAP"/>
+					<Add option="-DDISABLE_PNG"/>
+					<Add option="-DEIGEN_USE_NEW_STDVECTOR"/>
+					<Add option="-DEIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET"/>
+					<Add option="-DFLANN_STATIC"/>
+					<Add option="-Dqh_QHpointer"/>
+					<Add option="-DQT_CORE_LIB"/>
+					<Add option="-DQT_NO_DEBUG"/>
+					<Add option="-DQT_GUI_LIB"/>
+					<Add option="-DQT_WIDGETS_LIB"/>
+					<Add option="-DQT_TESTLIB_LIB"/>
+					<Add option="-DQT_CONCURRENT_LIB"/>
+					<Add option="-DQT_OPENGL_LIB"/>
+					<Add directory="/usr/include/vtk-5.8"/>
+					<Add directory="/usr/local/include/opencv"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/pcl-1.7"/>
+					<Add directory="/usr/local/include/eigen3"/>
+					<Add directory="/usr/include/ni"/>
+					<Add directory="/usr/include/openni2"/>
+					<Add directory="/usr/include/qt5"/>
+					<Add directory="/usr/include/qt5/QtCore"/>
+					<Add directory="/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64"/>
+					<Add directory="/usr/include/qt5/QtGui"/>
+					<Add directory="/usr/include/qt5/QtWidgets"/>
+					<Add directory="/usr/include/qt5/QtTest"/>
+					<Add directory="/usr/include/qt5/QtConcurrent"/>
+					<Add directory="/usr/include/qt5/QtOpenGL"/>
+					<Add directory="/home/bolunzhang/octopus/ros/devel/include"/>
+					<Add directory="/opt/ros/indigo/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.8/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/usr/include/c++/4.8"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/4.8"/>
+					<Add directory="/usr/include/c++/4.8/backward"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 nms"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="nms/fast">
+				<Option output="/home/bolunzhang/workspace/nms/build/nms" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/bolunzhang/workspace/nms/build"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DDISABLE_PCAP"/>
+					<Add option="-DDISABLE_PNG"/>
+					<Add option="-DEIGEN_USE_NEW_STDVECTOR"/>
+					<Add option="-DEIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET"/>
+					<Add option="-DFLANN_STATIC"/>
+					<Add option="-Dqh_QHpointer"/>
+					<Add option="-DQT_CORE_LIB"/>
+					<Add option="-DQT_NO_DEBUG"/>
+					<Add option="-DQT_GUI_LIB"/>
+					<Add option="-DQT_WIDGETS_LIB"/>
+					<Add option="-DQT_TESTLIB_LIB"/>
+					<Add option="-DQT_CONCURRENT_LIB"/>
+					<Add option="-DQT_OPENGL_LIB"/>
+					<Add directory="/usr/include/vtk-5.8"/>
+					<Add directory="/usr/local/include/opencv"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/pcl-1.7"/>
+					<Add directory="/usr/local/include/eigen3"/>
+					<Add directory="/usr/include/ni"/>
+					<Add directory="/usr/include/openni2"/>
+					<Add directory="/usr/include/qt5"/>
+					<Add directory="/usr/include/qt5/QtCore"/>
+					<Add directory="/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64"/>
+					<Add directory="/usr/include/qt5/QtGui"/>
+					<Add directory="/usr/include/qt5/QtWidgets"/>
+					<Add directory="/usr/include/qt5/QtTest"/>
+					<Add directory="/usr/include/qt5/QtConcurrent"/>
+					<Add directory="/usr/include/qt5/QtOpenGL"/>
+					<Add directory="/home/bolunzhang/octopus/ros/devel/include"/>
+					<Add directory="/opt/ros/indigo/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.8/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/usr/include/c++/4.8"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/4.8"/>
+					<Add directory="/usr/include/c++/4.8/backward"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 nms/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/bolunzhang/workspace/nms/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/bolunzhang/workspace/nms/main.cpp">
+			<Option target="nms"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/share/pcl-1.7/PCLConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\share\pcl-1.7\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/share/pcl-1.7/PCLConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\share\pcl-1.7\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfig-Java.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfig-Python.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfig-Tcl.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfigQt.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKTargets.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKTargets-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/UseVTK.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfig-Java.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfig-Python.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfig-Tcl.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfigQt.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/UseVTK.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfig-Java.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfig-Python.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfig-Tcl.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/VTKConfigQt.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/UseVTK.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/vtk-5.8/CMake/vtkMakeInstantiator.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\vtk-5.8\CMake\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Gui/Qt5GuiConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Gui\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Gui/Qt5GuiConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Gui\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Gui\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Core\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Core\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Core\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Core\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreMacros.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Core\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Core\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Core/Qt5CoreConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Core\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Widgets/Qt5WidgetsConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Widgets\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Widgets/Qt5WidgetsConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Widgets\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Widgets/Qt5WidgetsConfigExtras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Widgets\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Widgets/Qt5WidgetsMacros.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Widgets\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Test/Qt5TestConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Test\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Test/Qt5TestConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Test\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Concurrent/Qt5ConcurrentConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Concurrent\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5Concurrent/Qt5ConcurrentConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5Concurrent\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5OpenGL/Qt5OpenGLConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5OpenGL\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/lib/x86_64-linux-gnu/cmake/Qt5OpenGL/Qt5OpenGLConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\x86_64-linux-gnu\cmake\Qt5OpenGL\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/local/share/OpenCV/OpenCVConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/local/share/OpenCV/OpenCVConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/local/share/OpenCV/OpenCVModules.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/bolunzhang/workspace/nms/../../../../usr/local/share/OpenCV/OpenCVModules-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
