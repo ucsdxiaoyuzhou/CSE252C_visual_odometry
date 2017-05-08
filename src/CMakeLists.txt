@@ -18,6 +18,7 @@ draw.cpp
 frame.cpp
 map.cpp
 optimizer.cpp
+ORBextractor.cc
 )
 
 target_link_libraries(${PROJECT_NAME}

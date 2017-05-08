@@ -22,15 +22,18 @@ Optimizer::Optimizer(int _fullTimes, int _localTimes){
 
 }
 
-void Optimizer::addNewNodeEdge(int prevId, int currId, Mat rvec, Mat tvec){
+void Optimizer::addNewNodeEdge(int prevId, int currId, Mat rvec, Mat tvec, bool newNode){
 	Eigen::Isometry3d T = cvMat2Eigen(rvec, tvec);
 
 	//add new node
-	g2o::VertexSE3 *v = new g2o::VertexSE3();
-    v->setId( currId );
-    v->setEstimate( Eigen::Isometry3d::Identity() );
-    globalOptimizer.addVertex(v);
-
+    if(newNode == true){
+    	g2o::VertexSE3 *v = new g2o::VertexSE3();
+        v->setId( currId );
+        v->setEstimate( Eigen::Isometry3d::Identity() );
+        globalOptimizer.addVertex(v);
+        cout << "add new node: " << currId << endl;
+    }
+    
     //add edge
     g2o::EdgeSE3* edge = new g2o::EdgeSE3();
   	//id between connected nodes
@@ -43,14 +46,15 @@ void Optimizer::addNewNodeEdge(int prevId, int currId, Mat rvec, Mat tvec){
     // 信息矩阵是协方差矩阵的逆，表示我们对边的精度的预先估计
     // 因为pose为6D的，信息矩阵是6*6的阵，假设位置和角度的估计精度均为0.1且互相独立
     // 那么协方差则为对角为0.01的矩阵，信息阵则为100的矩阵
-    information(0,0) = information(1,1) = information(2,2) = 100;
-    information(3,3) = information(4,4) = information(5,5) = 100;
+    information(0,0) = information(1,1) = information(2,2) = 80;
+    information(3,3) = information(4,4) = information(5,5) = 110;
     // 也可以将角度设大一些，表示对角度的估计更加准确
     edge->setInformation( information );
     // estimation of edge is the result of PnP
     edge->setMeasurement(T.inverse());
     // 将此边加入图中
     globalOptimizer.addEdge(edge);
+    cout << "add new edge from node " <<currId<< " to node " << prevId << endl; 
 
 }
 

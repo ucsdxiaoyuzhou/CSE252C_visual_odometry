@@ -51,7 +51,11 @@ void LoadImages(const string &strPathLeft,
                 const string &strPathRight,
                 vector<string> &vstrImageLeft,
                 vector<string> &vstrImageRight);
-
+//used to find nearby loop
+void checkNearbyLoop(vector<Frame>& keyframe, 
+                     Frame& currFrame,
+                     Optimizer& opt,
+                     int step);
 Eigen::Isometry3d cvMat2Eigen( cv::Mat& rvec, cv::Mat& tvec );
 
 int main(int argc, const char * argv[]) {
@@ -86,6 +90,7 @@ int main(int argc, const char * argv[]) {
     int col = fsSettings["width"];
     int fullTimes = fsSettings["global optimization times"];
     int localTimes = fsSettings["local optimization times"];
+    int nearbyLoopStep = fsSettings["nearby loop step"];
 
     string TrajectoryFile = fsSettings["trajectory file"];
 
@@ -94,6 +99,9 @@ int main(int argc, const char * argv[]) {
     cout << " upper movement threshold:  " << upperMovementThres << endl;
     cout << " feature number threshold:  " << matchedThres << endl;
     cout << "          frame threshold:  " << frameThres << endl;
+    cout << "         nearby loop step:  " << nearbyLoopStep << endl;
+    cout << "global optimization times:  " << fullTimes << endl;
+    cout << " local optimization times:  " << localTimes << endl;
 
     if(srp.P1.empty() || srp.P2.empty() || row==0 || col==0){
         cerr << "ERROR: Calibration parameters to rectify stereo are missing!" << endl;
@@ -116,6 +124,11 @@ int main(int argc, const char * argv[]) {
     Frame lastframe(leftImgName[0], rightImgName[0], srp.P1, srp.P2, 0);
     keyframe.push_back(lastframe);
 
+
+    // Frame lastframe(leftImgName[0], srp.P1, 0);
+    // lastframe.setKeyframe(rightImgName[0], srp.P2);
+    // keyframe.push_back(lastframe);
+
     ofstream poseFileOut;
     poseFileOut.open(TrajectoryFile.c_str(), std::ofstream::out | std::ofstream::trunc);
 
@@ -123,50 +136,40 @@ int main(int argc, const char * argv[]) {
     double accumMove = 0.0;
 
     Optimizer optimizer(fullTimes, localTimes);
-//=============== initialize g2o related========================================
-    //initialize solver
-   /* SlamLinearSolver* linearSolver = new SlamLinearSolver();
-    linearSolver->setBlockOrdering( false );
-    SlamBlockSolver* blockSolver = new SlamBlockSolver( linearSolver );
-    g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg( blockSolver );
-    
-    g2o::SparseOptimizer globalOptimizer;  
-    globalOptimizer.setAlgorithm( solver ); 
-    globalOptimizer.setVerbose( false );
 
-    //add the first vertex
-    g2o::VertexSE3* v = new g2o::VertexSE3();
-    v->setId(0);
-    v->setEstimate(Eigen::Isometry3d::Identity());
-    v->setFixed( true ); //fix the first vertex
-    globalOptimizer.addVertex(v);*/
+    int deleteKeyframe = -20;
+    int countKeyframe = 1;
+
+    Mat prevRvec, prevTvec;
+
 //============== main loop ============================================================
-    for(int count = 1;count < leftImgName.size()-3; count+=1){
+    for(int count = 1;count < leftImgName.size()-3; count++){
         //grap the current frame
         intervalFrame++;
         Frame currframe(leftImgName[count], rightImgName[count], srp.P1, srp.P2, count);
-        
-        keyframe.back().matchFrame(currframe);
+        // Frame currframe(leftImgName[count], srp.P1, count);
 
-        //compute the extent of motion
+        keyframe.back().matchFrame(currframe);
         accumMove = normofTransform(keyframe.back().rvec, keyframe.back().tvec);
 
         if(((accumMove > lowerMovementThres) && 
             (accumMove < upperMovementThres)) || 
             intervalFrame >= frameThres ||
-            keyframe.back().matchedNumWithCurrentFrame < matchedThres){
+            ((keyframe.back().matchedNumWithCurrentFrame < matchedThres) &&
+             (accumMove < upperMovementThres))){
             
+            cout << endl<<endl<<endl<<"========================================================="<<endl;
+            cout <<"insert keyframe." << endl;
             optimizer.addNewNodeEdge(keyframe.back().frameID, 
             						 currframe.frameID,
             						 keyframe.back().rvec, 
-            						 keyframe.back().tvec);
+            						 keyframe.back().tvec,
+                                     true);
 
-            cout << "insert keyframe." << endl;
             //add new keyframe
             accumMove = 0.0;
             intervalFrame = 0;
-            // keyframe.back().matchFrame(currframe);
-
+            
             for(int n = 0; n < 3; n++){
                 poseFileOut << setw(15)<< keyframe.back().rvec.at<double>(n,0) <<" ";
                 cout<< setw(15) << keyframe.back().rvec.at<double>(n,0) <<" ";
@@ -178,22 +181,77 @@ int main(int argc, const char * argv[]) {
             poseFileOut << endl;
             cout << endl;
 
-            Eigen::Isometry3d curTrans =  cvMat2Eigen(keyframe.back().rvec, keyframe.back().tvec);
-            myMap.jointToMap(myMap.pointToPointCloud(keyframe.back().scenePts), 
-                             curTrans);
+            //check nearby loop
+            checkNearbyLoop(keyframe, currframe, optimizer, nearbyLoopStep);
+            
+            if(keyframe.back().success == true){
+                Eigen::Isometry3d curTrans =  cvMat2Eigen(keyframe.back().rvec, keyframe.back().tvec);
+                myMap.jointToMap(myMap.pointToPointCloud(keyframe.back().scenePts), 
+                                curTrans);
+            }
+            else{
+                cout << "failed" << endl;
+                Eigen::Isometry3d curTrans =  cvMat2Eigen(keyframe[countKeyframe-1].rvec, keyframe[countKeyframe-1].tvec);
+                myMap.jointToMap(myMap.pointToPointCloud(keyframe[countKeyframe-1].scenePts), 
+                                curTrans);
+            }
+
             *cloud = myMap.entireMap;
             viewer.showCloud(cloud);
-            if(waitKey(5) == 27){
-                exit;
-            }
+            if(waitKey(5) == 27){};
+
+            // currframe.setKeyframe(rightImgName[count], srp.P2);
             keyframe.push_back(currframe);
 
+            countKeyframe++; 
+            deleteKeyframe++;
+            if(deleteKeyframe > 0){
+                keyframe[deleteKeyframe].releaseMemory();
+            }  
         }
 
     }
-    poseFileOut.close();
+    
 
     optimizer.fullOptimize();
+    for(int i = 0; i < keyframe.size(); i ++){
+        g2o::VertexSE3* vertex = dynamic_cast<g2o::VertexSE3*>(optimizer.globalOptimizer.vertex(keyframe[i].frameID));
+        Eigen::Isometry3d pose = vertex->estimate(); //该帧优化后的位姿
+        /*Mat t = Mat(1,3,CV_64F);
+        Mat r = Mat(1,3,CV_64F);
+        Mat R = Mat(3,3,CV_64F);
+        for(int r = 0; r < 3; r++){
+            for(int c = 0; c < 3; c++){
+                R.at<double>(r,c) = pose(r,c);
+            }
+            t.at<double>(0,r) = pose(r,3);
+        }
+        Rodrigues(R,r);
+
+        for(int n = 0; n < 3; n++){
+                poseFileOut << setw(15)<< r.at<double>(0,n) <<" ";
+                cout<< setw(15) << r.at<double>(0,n) <<" ";
+            }
+            for(int n = 0; n < 3; n++){
+                poseFileOut << setw(15)<< t.at<double>(0,n) << " ";
+                cout<< setw(15) << t.at<double>(0,n) << " ";
+            }
+            poseFileOut << endl;
+            cout << endl;
+            */
+        for(int r = 0; r < 3; r++){
+            for(int c = 0; c < 4; c++){
+                poseFileOut << setw(15)<< pose(r,c) <<" ";
+                cout<< setw(15) << pose(r,c) <<" ";
+            }
+        } 
+        poseFileOut << endl;
+        cout << endl;
+    }
+    poseFileOut.close();
+
+
+
 
     cloud->height = 1;
     cloud->width = cloud->points.size();
@@ -205,6 +263,42 @@ int main(int argc, const char * argv[]) {
     waitKey(0);
     return 0;
 }
+
+void checkNearbyLoop(vector<Frame>& keyframe, 
+                     Frame& currFrame,
+                     Optimizer& opt,
+                     int step){
+    //always check from the last keyframe
+    int frameSize = keyframe.size();
+    for(int n = 0; n < min(step-1, frameSize-1); n++){
+        int idx = frameSize - n - 2;
+        keyframe[idx].matchFrame(currFrame);
+
+        double move = normofTransform(keyframe[idx].rvec, keyframe[idx].tvec);
+        if(keyframe[idx].matchedNumWithCurrentFrame > 15 &&
+           move < 10.0){
+
+            opt.addNewNodeEdge(keyframe[idx].frameID,
+                               currFrame.frameID,
+                               keyframe[idx].rvec,
+                               keyframe[idx].tvec,
+                               false);
+            // cout << "found a nearby loop" << endl;
+            for(int n = 0; n < 3; n++){
+                // poseFileOut << setw(15)<< keyframe.back().rvec.at<double>(n,0) <<" ";
+                cout<< setw(15) << keyframe[idx].rvec.at<double>(n,0) <<" ";
+            }
+            for(int n = 0; n < 3; n++){
+                // poseFileOut << setw(15)<< keyframe.back().tvec.at<double>(n,0) << " ";
+                cout<< setw(15) << keyframe[idx].tvec.at<double>(n,0) << " ";
+            }
+            cout << endl;
+        }
+    }
+}
+
+
+
 
 Eigen::Isometry3d cvMat2Eigen( cv::Mat& rvec, cv::Mat& tvec )
 {
@@ -262,9 +356,4 @@ void LoadImages(const string &strPathLeft,
     }
     delete cstr;
 }
-
-
-
-
-
 

@@ -35,15 +35,16 @@ using namespace cv;
 class Optimizer{
 private:
 	int fullTimes;
-	int localTimes;
-    g2o::SparseOptimizer globalOptimizer;  
-    g2o::RobustKernel* robustKernel = g2o::RobustKernelFactory::instance()->construct( "Cauchy" );
+	int localTimes;  
+    g2o::RobustKernel* robustKernel = g2o::RobustKernelFactory::instance()->construct( "Welsch" );
 
 public:
 	Optimizer(int _fullTimes, int _localTimes);
-	void addNewNodeEdge(int prevId, int currId, Mat rvec, Mat tvec);
+	void addNewNodeEdge(int prevId, int currId, Mat rvec, Mat tvec, bool newNode);
 	void fullOptimize();
 	void localOptimize();
+	
+    g2o::SparseOptimizer globalOptimizer;
 
 };
 
