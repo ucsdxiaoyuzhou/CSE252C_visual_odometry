@@ -442,7 +442,7 @@ void Frame::stereoMatchKLT(const vector<Point2f>& p1, //keypoint in the previous
                                vector<int>& farIdx){
     vector<float> err;
     vector<uchar> status;
-    Size winSize = Size(199,2);
+    Size winSize = Size(199,3);
     TermCriteria termcrit(TermCriteria::COUNT|TermCriteria::EPS,50,0.01);
     
     vector<Point2f> temp_p_keypointL, temp_p_keypointR;
