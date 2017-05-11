@@ -214,31 +214,11 @@ int main(int argc, const char * argv[]) {
     
 
     optimizer.fullOptimize();
+
+/*
     for(int i = 0; i < keyframe.size(); i ++){
         g2o::VertexSE3* vertex = dynamic_cast<g2o::VertexSE3*>(optimizer.globalOptimizer.vertex(keyframe[i].frameID));
         Eigen::Isometry3d pose = vertex->estimate(); //该帧优化后的位姿
-        /*Mat t = Mat(1,3,CV_64F);
-        Mat r = Mat(1,3,CV_64F);
-        Mat R = Mat(3,3,CV_64F);
-        for(int r = 0; r < 3; r++){
-            for(int c = 0; c < 3; c++){
-                R.at<double>(r,c) = pose(r,c);
-            }
-            t.at<double>(0,r) = pose(r,3);
-        }
-        Rodrigues(R,r);
-
-        for(int n = 0; n < 3; n++){
-                poseFileOut << setw(15)<< r.at<double>(0,n) <<" ";
-                cout<< setw(15) << r.at<double>(0,n) <<" ";
-            }
-            for(int n = 0; n < 3; n++){
-                poseFileOut << setw(15)<< t.at<double>(0,n) << " ";
-                cout<< setw(15) << t.at<double>(0,n) << " ";
-            }
-            poseFileOut << endl;
-            cout << endl;
-            */
         for(int r = 0; r < 3; r++){
             for(int c = 0; c < 4; c++){
                 poseFileOut << setw(15)<< pose(r,c) <<" ";
@@ -247,7 +227,7 @@ int main(int argc, const char * argv[]) {
         } 
         poseFileOut << endl;
         cout << endl;
-    }
+    }*/
     poseFileOut.close();
 
 
@@ -275,7 +255,7 @@ void checkNearbyLoop(vector<Frame>& keyframe,
         keyframe[idx].matchFrame(currFrame);
 
         double move = normofTransform(keyframe[idx].rvec, keyframe[idx].tvec);
-        if(keyframe[idx].matchedNumWithCurrentFrame > 15 &&
+        if(keyframe[idx].matchedNumWithCurrentFrame > 25 &&
            move < 10.0){
 
             opt.addNewNodeEdge(keyframe[idx].frameID,

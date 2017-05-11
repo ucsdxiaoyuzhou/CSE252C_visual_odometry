@@ -37,8 +37,8 @@ void Optimizer::addNewNodeEdge(int prevId, int currId, Mat rvec, Mat tvec, bool 
     //add edge
     g2o::EdgeSE3* edge = new g2o::EdgeSE3();
   	//id between connected nodes
-    edge->vertices() [0] = globalOptimizer.vertex(currId);
-    edge->vertices() [1] = globalOptimizer.vertex(prevId);
+    edge->vertices() [0] = globalOptimizer.vertex(currId);//from
+    edge->vertices() [1] = globalOptimizer.vertex(prevId);//to
     edge->setRobustKernel( robustKernel );
 
     //information matrix

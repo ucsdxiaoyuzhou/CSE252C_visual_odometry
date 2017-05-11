@@ -19,8 +19,8 @@ RIGHT.P: !!opencv-matrix
 lower move threshold: 5.0
 upper move threshold: 15.0
 feature number threshold: 100
-frame threshold: 6
-nearby loop step: 4
+frame threshold: 3
+nearby loop step: 3
 
 
 trajectory file: "../pose.txt" 

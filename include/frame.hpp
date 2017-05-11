@@ -73,14 +73,15 @@ public:
     Frame(string filenameL, Mat _P1, int id);
     void setKeyframe(string filenameR, Mat _P2);
     void detectFeatures();
+    
     void stereoMatchKLT(const vector<Point2f>& p1, //keypoint in the previous frame
                             const vector<Point2f>& p2, //keypoint in the current frame
                                vector<Point3f>& obj_pts,
                                vector<Point2f>& img_pts,
                                vector<int>& farIdx);
 
-    void stereoMatchFeature(const vector<Point2f>& p1, //keypoint in the previous frame
-                            const vector<Point2f>& p2, //keypoint in the current frame
+    void stereoMatchFeature(vector<KeyPoint>& p1, //keypoint in the previous frame
+                            vector<KeyPoint>& p2, //keypoint in the current frame
                             vector<Point3f>& obj_pts,
                             vector<Point2f>& img_pts,
                             vector<int>& farIdx);
@@ -92,12 +93,20 @@ public:
     void getFrame(string filenameL, string filenameR);
     void matchFrame(Frame frame);
     void matchFrameNN(Frame frame);
-    void getMotion(vector<DMatch> matches, Frame frame);
+
     void matchFeature(const Mat& desp1, const Mat& desp2, 
                          const vector<Point2f>& p_keypoint1, 
                          const vector<Point2f>& p_keypoint2,
                          vector<Point2f>& matched_keypoint1,
                          vector<Point2f>& matched_keypoint2);
+
+    void matchFeatureKNN(const Mat& desp1, const Mat& desp2, 
+                         const vector<KeyPoint>& keypoint1, 
+                         const vector<KeyPoint>& keypoint2,
+                         vector<KeyPoint>& matchedKeypoint1,
+                         vector<KeyPoint>& matchedKeypoint2,
+                         vector<DMatch>& matches,
+                         double knn_match_ratio = 0.8);
     void releaseMemory();
 };
 

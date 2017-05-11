@@ -42,13 +42,13 @@ Frame::Frame(string filenameL, string filenameR, Mat _P1, Mat _P2, int id){
     SurfDescriptorExtractor descriptor;
     
     detector.detect(imgL, keypointL);
-    // detector.detect(imgR, keypointR);
+    detector.detect(imgR, keypointR);
     
     KeyPoint::convert(keypointL, p_keypointL);
-    // KeyPoint::convert(keypointR, p_keypointR);
+    KeyPoint::convert(keypointR, p_keypointR);
     
     descriptor.compute(imgL, keypointL, despL);
-    // descriptor.compute(imgR, keypointR, despR);
+    descriptor.compute(imgR, keypointR, despR);
 
     //create kd-tree for keypoints in the left image.
     /*
@@ -180,7 +180,7 @@ void Frame::matchFrameNN(Frame frame){
     vector<Point3f> obj_pts;
     vector<Point2f> img_pts;
     vector<bool> curFarIdx;
-    vector<Point2f> matched_prev, matched_curr;
+    vector<Point2f> matchedPrev, matchedCurr;
     //============try kdtree match=================
     cv::Ptr<cv::DescriptorExtractor> descriptor = cv:: DescriptorExtractor::create( "SURF" );
     for(int n = 0; n < proj_p_keypointL.size(); n++){
@@ -209,8 +209,6 @@ void Frame::matchFrameNN(Frame frame){
                 //     td = frame.despL.row(pointIdxRadiusSearch[i]).clone();
                 //     tempDesp.push_back(td);
                 // }
-
-
                 //==============================================
                 vector<KeyPoint> tempkeypoint;
                 for(int k = 0; k < pointIdxRadiusSearch.size(); k++){
@@ -231,13 +229,13 @@ void Frame::matchFrameNN(Frame frame){
                     obj_pts.push_back(scenePts[n]);
                     img_pts.push_back(frame.p_keypointL[originalIdx]);
                     curFarIdx.push_back(farPtsIdx[n]);
-                    matched_prev.push_back(p_keypointL[n]);
-                    matched_curr.push_back(frame.p_keypointL[originalIdx]);
+                    matchedPrev.push_back(p_keypointL[n]);
+                    matchedCurr.push_back(frame.p_keypointL[originalIdx]);
                 }
             }
         }
     }
-    drawMatch(imgL, matched_prev, matched_curr, 1, "matched features");
+    drawMatch(imgL, matchedPrev, matchedCurr, 1, "matched features");
     // 4. solve PnP
     int farnb = 0, closenb = 0;
     vector<Point2f> farImg_pts, closeImg_pts;
@@ -261,13 +259,13 @@ void Frame::matchFrameNN(Frame frame){
 
     vector<Point2f> finalP1, finalP2;
     for(int n = 0; n < inliers.rows; n++){
-        finalP1.push_back(matched_prev[inliers.at<int>(n,0)]);
-        finalP2.push_back(matched_curr[inliers.at<int>(n,0)]);
+        finalP1.push_back(matchedPrev[inliers.at<int>(n,0)]);
+        finalP2.push_back(matchedCurr[inliers.at<int>(n,0)]);
     }
     drawMatch(imgL, finalP1, finalP2, 1, "pnp inliers");
     // 5. update translation and rotation
         //updating done in PnP
-    // drawMatch(imgL, matched_prev, matched_curr, 1, "matched features");
+    // drawMatch(imgL, matchedPrev, matchedCurr, 1, "matched features");
     // drawMatch(imgL, keypointL, frame.keypointL, matches,1, "matched features");
     // drawFarandCloseFeatures(imgL, matched_close_img_pts, matched_far_img_pts, "far&close");
 
@@ -276,23 +274,22 @@ void Frame::matchFrameNN(Frame frame){
 void Frame::matchFrame(Frame frame){
     // use FLANN matcher to match features between current frame and 
     // the previous frame.
-    vector<Point2f> matched_prev, matched_curr;
-
-    matchFeature(despL, frame.despL, 
-                 p_keypointL, frame.p_keypointL,
-                 matched_prev, matched_curr);
-
-    drawMatch(imgL, matched_prev, matched_curr, 1, "matched features");
+    vector<KeyPoint> matchedPrev, matchedCurr;
+    vector<DMatch> matches;
+    matchFeatureKNN(despL, frame.despL, 
+                    keypointL, frame.keypointL,
+                    matchedPrev, matchedCurr,
+                    matches, 0.6);
 
     vector<Point3f> obj_pts;
     vector<Point2f> img_pts;
     vector<int> farIdx;
-    // cout << "matched feature number: " << matched_prev.size() << endl;
-    // matchedNumWithCurrentFrame = matched_prev.size();
-    stereoMatchKLT(matched_prev, //keypoint in the previous frame
-                   matched_curr, //keypoint in the current frame
-                   obj_pts, img_pts, farIdx);
-/*
+    // cout << "matched feature number: " << matchedPrev.size() << endl;
+    // matchedNumWithCurrentFrame = matchedPrev.size();
+    stereoMatchFeature(matchedPrev, //keypoint in the previous frame
+                       matchedCurr, //keypoint in the current frame
+                       obj_pts, img_pts, farIdx);
+
     int farnb = 0, closenb = 0;
     vector<Point2f> farImg_pts, closeImg_pts;
     vector<Point3f> farObj_pts, closeObj_pts;
@@ -308,22 +305,18 @@ void Frame::matchFrame(Frame frame){
             closeObj_pts.push_back(obj_pts[i]);
         }
     }
-*/
+    scenePts = closeObj_pts;
     // drawFarandCloseFeatures(frame.imgL, img_pts, farIdx, "far close");
     Mat inliers;
     PnP(obj_pts, img_pts, inliers);
-    drawMatch(imgL, matched_prev, matched_curr, 1, "matched features");
-
+    drawMatch(imgL, matchedPrev, matchedCurr, 1, "matched features");
+    cout << "PnP inliers: " << img_pts.size() << endl;
     vector<Point2f> finalP1, finalP2;
     for(int n = 0; n < inliers.rows; n++){
-        finalP1.push_back(matched_prev[inliers.at<int>(n,0)]);
-        finalP2.push_back(matched_curr[inliers.at<int>(n,0)]);
+        finalP1.push_back(matchedPrev[inliers.at<int>(n,0)].pt);
+        finalP2.push_back(matchedCurr[inliers.at<int>(n,0)].pt);
     }
-    drawMatch(imgL, finalP1, finalP2, 1, "pnp inliers");
-    // drawMatch(imgL, keypointL, frame.keypointL, matches,1, "matched features");
-    // drawFarandCloseFeatures(imgL, matched_close_img_pts, matched_far_img_pts, "far&close");
-
-    
+    drawMatch(imgL, finalP1, finalP2, 1, "pnp inliers");    
 }
 
 void Frame::PnP(vector<Point3f> obj_pts, 
@@ -355,59 +348,44 @@ void Frame::PnP(vector<Point3f> obj_pts,
     //     mR.push_back(pt);
     // }
     // drawMatch(imgL, mL, mR, 1, "PnP");
-
-
 }
 
 
-void Frame::stereoMatchFeature(const vector<Point2f>& p1, //keypoint in the previous frame
-                               const vector<Point2f>& p2, //keypoint in the current frame
+
+void Frame::stereoMatchFeature(vector<KeyPoint>& p1, //keypoint usd to get obj_pts
+                               vector<KeyPoint>& p2, //keypoint usd to get img_pts
                                vector<Point3f>& obj_pts,
                                vector<Point2f>& img_pts,
                                vector<int>& farIdx){
-    
+    obj_pts.clear();
     img_pts.clear();
+    farIdx.clear();
+
+    vector<KeyPoint> tGoodFeaturesLK, tGoodFeaturesRK;
+    // vector<KeyPoint
+    Mat tempDespL;
 
     SurfDescriptorExtractor descriptor;
-    Mat tempDespL;
-    vector<KeyPoint> kp1;
-    KeyPoint::convert(p1, kp1);
+    descriptor.compute(imgL, p1, tempDespL);
 
-    descriptor.compute(imgL, kp1, tempDespL);
-    cout << "right feature number: "<< despR.rows << endl;
-    FlannBasedMatcher matcher;
     vector<DMatch> matches;
-    // drawFeature(imgL, p1, "left features");
-    // drawFeature(imgR, p_keypointR, "right features");
-    //stereo match
-    matcher.match(tempDespL, despR, matches);
-    vector<Point2f> tempGoodFeaturesL, tempGoodFeaturesR;
-    //match stereo features and discard bad matches
-    double maxDist = 0, minDist = 100;
-    for(int i = 0; i < matches.size(); i++){
-        double dist = matches[i].distance;
-        if(dist < minDist) minDist = dist;
-        if(dist > maxDist) maxDist = dist;
-    }
-    cout << "min dist: "<< minDist << "  max dist: " << maxDist << endl;
-    // vector<DMatch> goodMatches;
-    for(int i = 0; i < matches.size(); i++){
-        cout << matches[i].distance << endl;
-        if(matches[i].distance <= max(3.0*minDist, 0.2) &&
+    matchFeatureKNN(tempDespL, despR, 
+                    p1, keypointR,
+                    tGoodFeaturesLK,
+                    tGoodFeaturesRK,
+                    matches, 0.6);
 
-           fabs(p1[matches[i].queryIdx].y - 
-                p_keypointR[matches[i].trainIdx].y) < 1.5 &&
+    vector<Point2f> tGoodFeaturesL, tGoodFeaturesR;
 
-           fabs(p1[matches[i].queryIdx].x - 
-                p_keypointR[matches[i].trainIdx].x) < 130.0){
+    KeyPoint::convert(tGoodFeaturesLK, tGoodFeaturesL);
+    KeyPoint::convert(tGoodFeaturesRK, tGoodFeaturesR);
 
-            tempGoodFeaturesL.push_back(p1[matches[i].queryIdx]);
-            tempGoodFeaturesR.push_back(p_keypointR[matches[i].trainIdx]);
-            img_pts.push_back(p2[matches[i].queryIdx]);
-        }
-    }
-    cout << "stere point number: " << tempGoodFeaturesR.size() << endl;
-    //obtain 3D points
+    // drawFeature(imgL, p1, "left");
+    // drawFeature(imgR, p_keypointR, "right");
+    // drawMatch(imgL, tempGoodFeaturesL, tempGoodFeaturesR, 1, "stereo features");
+    // if(waitKey(100000) == 27){};
+
+    //obtain obj_pts
     float uc = P2.at<float>(0,2);
     float vc = P2.at<float>(1,2);
     float f = P2.at<float>(0,0);
@@ -415,13 +393,11 @@ void Frame::stereoMatchFeature(const vector<Point2f>& p1, //keypoint in the prev
     float d = 0;
     float thres = 40*b;
 
-    farIdx.clear();
-
-    for(int n = 0; n<tempGoodFeaturesL.size(); n++){
+    for(int n = 0; n<tGoodFeaturesL.size(); n++){
         Point3f pd;
-        d = fabs(tempGoodFeaturesL[n].x - tempGoodFeaturesR[n].x);
-        pd.x = b*(tempGoodFeaturesL[n].x - uc)/d;
-        pd.y = b*(tempGoodFeaturesL[n].y - vc)/d;
+        d = fabs(tGoodFeaturesL[n].x - tGoodFeaturesR[n].x);
+        pd.x = b*(tGoodFeaturesL[n].x - uc)/d;
+        pd.y = b*(tGoodFeaturesL[n].y - vc)/d;
         pd.z = b*f/d;
         obj_pts.push_back(pd);
         if(pd.z < thres){
@@ -431,74 +407,11 @@ void Frame::stereoMatchFeature(const vector<Point2f>& p1, //keypoint in the prev
             farIdx.push_back(1);
         }   
     }
-    // drawFarandCloseFeatures(imgL, closeFeaturesL, farFeaturesL, "far close features");
-    drawMatch(imgL, p_keypointL, p_keypointR, 1, "stereo features");
-}
 
-void Frame::stereoMatchKLT(const vector<Point2f>& p1, //keypoint in the previous frame
-                            const vector<Point2f>& p2, //keypoint in the current frame
-                               vector<Point3f>& obj_pts,
-                               vector<Point2f>& img_pts,
-                               vector<int>& farIdx){
-    vector<float> err;
-    vector<uchar> status;
-    Size winSize = Size(199,3);
-    TermCriteria termcrit(TermCriteria::COUNT|TermCriteria::EPS,50,0.01);
-    
-    vector<Point2f> temp_p_keypointL, temp_p_keypointR;
-
-    calcOpticalFlowPyrLK(imgL, imgR, 
-                         p1,temp_p_keypointR,
-                         status, err, winSize,
-                         7, termcrit, OPTFLOW_LK_GET_MIN_EIGENVALS, 0.001);
-
-    //delete outliers from optical flow
-    //========= select good matches================
-    vector<int> inlierIdx;
-    vector<Point2f> matched_p_keypointL, matched_p_keypointR;
-    for(int n = 0; n < status.size(); n++){
-        if((1 == status[n]) && 
-           (err[n] < 0.1) &&
-           (fabs(p1[n].y - temp_p_keypointR[n].y) < 1.5)){
-            Point2f pt;
-
-            pt = p1[n];
-            matched_p_keypointL.push_back(pt);
-
-            pt = temp_p_keypointR[n];
-            matched_p_keypointR.push_back(pt);
-
-            img_pts.push_back(p2[n]);
-        }
+    //obtain img_pts
+    for(auto m:matches){
+        img_pts.push_back(p2[m.queryIdx].pt);
     }
-
-    //obtain 3D points
-    float uc = P2.at<float>(0,2);
-    float vc = P2.at<float>(1,2);
-    float f = P2.at<float>(0,0);
-    float b = -P2.at<float>(0,3)/f;
-    float d = 0;
-    float thres = 40.0*b;
-
-    farIdx.clear();
-
-    for(int n = 0; n<matched_p_keypointL.size(); n++){
-        Point3f pd;
-        d = fabs(matched_p_keypointL[n].x - matched_p_keypointR[n].x);
-        pd.x = b*(matched_p_keypointL[n].x - uc)/d;
-        pd.y = b*(matched_p_keypointL[n].y - vc)/d;
-        pd.z = b*f/d;
-        obj_pts.push_back(pd);
-        if(pd.z < thres){
-            farIdx.push_back(0);
-        }
-        else{
-            farIdx.push_back(1);
-        }   
-    }
-    scenePts = obj_pts;
-    forDrawL = matched_p_keypointL;
-    drawMatch(imgL, matched_p_keypointL, matched_p_keypointR, 1, "stereo features");
 }
 
 void symmetryTest(const std::vector<cv::DMatch> &matches1,const std::vector<cv::DMatch> &matches2,std::vector<cv::DMatch>& symMatches)
@@ -516,31 +429,16 @@ void symmetryTest(const std::vector<cv::DMatch> &matches1,const std::vector<cv::
         }
     }
 }
+
 void Frame::matchFeature(const Mat& desp1, const Mat& desp2, 
                          const vector<Point2f>& p_keypoint1, 
                          const vector<Point2f>& p_keypoint2,
-                         vector<Point2f>& matched_keypoint1,
-                         vector<Point2f>& matched_keypoint2){
+                         vector<Point2f>& matchedKeypoint1,
+                         vector<Point2f>& matchedKeypoint2){
 
-    matched_keypoint1.clear();
-    matched_keypoint2.clear();
+    matchedKeypoint1.clear();
+    matchedKeypoint2.clear();
     float imgThres = 0.2 * sqrt(pow(imgL.rows, 2)+pow(imgL.cols, 2));
-/*    BFMatcher matcher(NORM_L2, true);
-    vector<DMatch> matches;
-    matcher.match(desp1, desp2, matches);
-
-    
-    for(int n = 0; n < matches.size(); n++){
-        Point2f pt1, pt2;
-        pt1 = p_keypoint1[matches[n].trainIdx];
-        pt2 = p_keypoint2[matches[n].queryIdx];
-
-        if(sqrt(pow(pt1.x-pt2.x, 2)+pow(pt1.y-pt2.y, 2)) < imgThres){
-            matched_keypoint1.push_back(pt1);
-            matched_keypoint2.push_back(pt2);
-        }
-    }
-*/
 
     FlannBasedMatcher matcher;
     vector<DMatch> matches1to2, matches2to1;
@@ -569,13 +467,56 @@ void Frame::matchFeature(const Mat& desp1, const Mat& desp2,
             qIdx = mutualMatches[i].queryIdx; // previous, used to determine depth
             tIdx = mutualMatches[i].trainIdx; // current
             //matched features, one-to-one correspondence
-            matched_keypoint1.push_back(p_keypoint1[qIdx]);
-            matched_keypoint2.push_back(p_keypoint2[tIdx]);
+            matchedKeypoint1.push_back(p_keypoint1[qIdx]);
+            matchedKeypoint2.push_back(p_keypoint2[tIdx]);
         }
     }
-    
 }
 
+
+void Frame::matchFeatureKNN(const Mat& desp1, const Mat& desp2, 
+                            const vector<KeyPoint>& keypoint1, 
+                            const vector<KeyPoint>& keypoint2,
+                            vector<KeyPoint>& matchedKeypoint1,
+                            vector<KeyPoint>& matchedKeypoint2,
+                            vector<DMatch>& matches,
+                            double knn_match_ratio){
+
+    matchedKeypoint1.clear();
+    matchedKeypoint2.clear();
+    matches.clear();
+
+    float imgThres = 0.2 * sqrt(pow(imgL.rows, 2)+pow(imgL.cols, 2));
+
+    cv::Ptr<cv::DescriptorMatcher>  matcher = cv::DescriptorMatcher::create("BruteForce");
+
+    vector< vector<cv::DMatch> > matches_knn;
+    matcher->knnMatch( desp1, desp2, matches_knn, 2 );
+    vector< cv::DMatch > tMatches;
+
+    for ( size_t i=0; i<matches_knn.size(); i++ )
+    {
+        if (matches_knn[i][0].distance < knn_match_ratio * matches_knn[i][1].distance )
+            tMatches.push_back( matches_knn[i][0] );
+    }
+    
+    if (tMatches.size() <= 20) //too few matches
+        return;
+
+    vector<KeyPoint> tMatchedKeypoint1, tMatchedKeypoint2;
+    for ( auto m:tMatches )
+    {
+        Point2f pt1, pt2;
+        pt1 = keypoint1[m.queryIdx].pt;
+        pt2 = keypoint2[m.trainIdx].pt;
+        float ptdist = sqrt(pow(pt1.x-pt2.x, 2) + pow(pt1.y-pt2.y, 2));
+        if(ptdist < imgThres){
+            matchedKeypoint1.push_back(keypoint1[m.queryIdx]);
+            matchedKeypoint2.push_back(keypoint2[m.trainIdx]);
+            matches.push_back(m);
+        } 
+    }  
+}
 
 void Frame::releaseMemory(){
     imgL.release();
